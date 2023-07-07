@@ -1,69 +1,33 @@
-class Contact:
-    def __init__(self, name, phone_number, email):
-        self.name = name
-        self.phone_number = phone_number
-        self.email = email
+import yfinance as yf
+import pandas as pd
 
-class ContactManagementSystem:
-    def __init__(self):
-        self.contacts = []
+def calculate_rsi(data, period=14):
+    close_delta = data['Close'].diff()
+    up = close_delta.clip(lower=0)
+    down = -1 * close_delta.clip(upper=0)
+    avg_gain = up.rolling(window=period).mean()
+    avg_loss = down.rolling(window=period).mean()
+    rs = avg_gain / avg_loss
+    rsi = 100 - (100 / (1 + rs))
+    return rsi
 
-    def add_contact(self, contact):
-        self.contacts.append(contact)
+def calculate_ma(data, period=50):
+    ma = data['Close'].rolling(window=period).mean()
+    return ma
 
-    def display_contacts(self):
-        for contact in self.contacts:
-            print(f"Name: {contact.name}")
-            print(f"Phone: {contact.phone_number}")
-            print(f"Email: {contact.email}")
-            print("-" * 10)
+# Fetch stock data using yfinance
+ticker = 'AAPL'  # Replace with your desired stock symbol
+stock_data = yf.download(ticker, start='2021-01-01', end='2023-07-06')
 
-    def search_contact(self, name):
-        for contact in self.contacts:
-            if contact.name == name:
-                return contact
-        return None
+# Calculate RSI
+rsi = calculate_rsi(stock_data)
 
-    def delete_contact(self, contact):
-        self.contacts.remove(contact)
+# Calculate Moving Average (MA)
+ma = calculate_ma(stock_data)
 
-# Main program
-contact_system = ContactManagementSystem()
+# Print the RSI and MA values
+print("RSI:")
+print(rsi)
 
-while True:
-    print("Contact Management System")
-    print("1. Add Contact")
-    print("2. View Contacts")
-    print("3. Search Contact")
-    print("4. Delete Contact")
-    print("5. Exit")
-
-    choice = input("Enter your choice (1-5): ")
-
-    if choice == '1':
-        name = input("Enter name: ")
-        phone_number = input("Enter phone number: ")
-        email = input("Enter email: ")
-
-        contact = Contact(name, phone_number, email)
-        contact_system.add_contact(contact)
-        print("Contact added successfully!")
-
-    elif choice == '2':
-        contact_system.display_contacts()
-
-    elif choice == '3':
-        name = input("Enter name to search: ")
-        contact = contact_system.search_contact(name)
-        if contact:
-            print(f"Name: {contact.name}")
-            print(f"Phone: {contact.phone_number}")
-            print(f"Email: {contact.email}")
-        else:
-            print("Sorry..! Contact not found!")
-
-    elif choice == '4':
-        name = input("Enter name to delete: ")
-        contact = contact_system.search_contact(name)
-        if contact:
-            contact_system.delete_contact
+print("\nMoving Average:")
+print(ma)
